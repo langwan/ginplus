@@ -1,0 +1,57 @@
+package ginplus
+
+import (
+	"fmt"
+	"github.com/gin-gonic/gin"
+	"testing"
+)
+
+func hello(c *gin.Context) {
+	c.JSON(200, gin.H{"message": "ok"})
+}
+func Test_A(t *testing.T) {
+	r := gin.New()
+
+	Any(r, "/hello", hello)
+
+	Any(r, "/hello2", func(c *gin.Context) error {
+		return nil
+	})
+	Any(r, "/hello3", func(c *gin.Context) error {
+		return NewJsonError("errmsg", "hello3 error")
+	})
+
+	type helloResponse struct {
+		Message string `json:"message"`
+	}
+	Any(r, "/hello4", func(c *gin.Context) (*helloResponse, error) {
+		return &helloResponse{Message: "hello4 message"}, nil
+	})
+	Any(r, "/hello5", func(c *gin.Context) (*helloResponse, error) {
+		return nil, NewJsonError("errmsg", "hello5 error")
+	})
+
+	type helloRequest struct {
+		Message string `json:"message"`
+	}
+
+	Any(r, "/hello6", func(c *gin.Context, request *helloRequest) error {
+		fmt.Println("request", request.Message)
+		return nil
+	})
+	Any(r, "/hello7", func(c *gin.Context, request *helloRequest) error {
+		fmt.Println("request", request.Message)
+		return NewJsonError("errmsg", "hello7 error")
+	})
+
+	Any(r, "/hello8", func(c *gin.Context, request *helloRequest) (*helloResponse, error) {
+		fmt.Println("request", request.Message)
+		return &helloResponse{Message: request.Message}, nil
+	})
+	Any(r, "/hello9", func(c *gin.Context, request *helloRequest) (*helloResponse, error) {
+		fmt.Println("request", request.Message)
+		return nil, NewJsonError("errmsg", "hello9 error")
+	})
+
+	r.Run(":4000")
+}

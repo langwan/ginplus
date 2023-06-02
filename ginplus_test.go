@@ -55,7 +55,7 @@ func Test_A(t *testing.T) {
 
 	Any(r, "/hello10", func(c *gin.Context, request *helloRequest) (*helloResponse, error) {
 		fmt.Println("request", request.Message)
-		return nil, NewJsonError("errmsg", "hello9 error")
+		return nil, NewJsonError("errmsg", "hello10 error")
 	})
 
 	r.Run(":4000")

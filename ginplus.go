@@ -157,22 +157,24 @@ func execute(c *gin.Context, handler any) {
 		}
 
 		call := method.Call(in)
-		if len(call) == 1 {
-			if call[0].IsNil() {
-				handlerError(c, nil)
-			} else {
-				callErr := call[0].Interface().(error)
-				handlerError(c, callErr)
-			}
+		if call != nil {
+			if len(call) == 1 {
+				if call[0].IsNil() {
+					handlerError(c, nil)
+				} else {
+					callErr := call[0].Interface().(error)
+					handlerError(c, callErr)
+				}
 
-		} else if len(call) == 2 {
-			if call[1].IsNil() {
-				handlerResponse(c, call[0].Interface(), nil)
-			} else {
-				callErr := call[1].Interface().(error)
-				handlerResponse(c, call[0].Interface(), callErr)
-			}
+			} else if len(call) == 2 {
+				if call[1].IsNil() {
+					handlerResponse(c, call[0].Interface(), nil)
+				} else {
+					callErr := call[1].Interface().(error)
+					handlerResponse(c, call[0].Interface(), callErr)
+				}
 
+			}
 		}
 	}
 }

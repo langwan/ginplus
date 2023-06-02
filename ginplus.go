@@ -72,12 +72,20 @@ func Any(r any, relativePath string, handler any) {
 		n.Any(relativePath, func(c *gin.Context) {
 			execute(c, handler)
 		})
+	} else if n, ok := r.(*gin.RouterGroup); ok {
+		n.Any(relativePath, func(c *gin.Context) {
+			execute(c, handler)
+		})
 	}
 }
 
 func GET(r any, relativePath string, handler any) {
 	if n, ok := r.(*gin.Engine); ok {
 		n.GET(relativePath, func(c *gin.Context) {
+			execute(c, handler)
+		})
+	} else if n, ok := r.(*gin.RouterGroup); ok {
+		n.Any(relativePath, func(c *gin.Context) {
 			execute(c, handler)
 		})
 	}
@@ -88,6 +96,10 @@ func POST(r any, relativePath string, handler any) {
 		n.POST(relativePath, func(c *gin.Context) {
 			execute(c, handler)
 		})
+	} else if n, ok := r.(*gin.RouterGroup); ok {
+		n.Any(relativePath, func(c *gin.Context) {
+			execute(c, handler)
+		})
 	}
 }
 
@@ -96,12 +108,20 @@ func PUT(r any, relativePath string, handler any) {
 		n.PUT(relativePath, func(c *gin.Context) {
 			execute(c, handler)
 		})
+	} else if n, ok := r.(*gin.RouterGroup); ok {
+		n.Any(relativePath, func(c *gin.Context) {
+			execute(c, handler)
+		})
 	}
 }
 
 func DELETE(r any, relativePath string, handler any) {
 	if n, ok := r.(*gin.Engine); ok {
 		n.DELETE(relativePath, func(c *gin.Context) {
+			execute(c, handler)
+		})
+	} else if n, ok := r.(*gin.RouterGroup); ok {
+		n.Any(relativePath, func(c *gin.Context) {
 			execute(c, handler)
 		})
 	}

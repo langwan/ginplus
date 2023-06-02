@@ -4,9 +4,43 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/locales/zh_Hans"
+	ut "github.com/go-playground/universal-translator"
+	"github.com/go-playground/validator/v10"
+	"github.com/go-playground/validator/v10/translations/zh"
 	"net/http"
 	"reflect"
 )
+
+var Trans ut.Translator
+
+func UseValidator() gin.HandlerFunc {
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		zhHans := zh_Hans.New()
+		uni := ut.New(zhHans)
+
+		Trans, _ = uni.GetTranslator("")
+		zh.RegisterDefaultTranslations(v, Trans)
+
+		v.RegisterTagNameFunc(func(field reflect.StructField) string {
+			return field.Tag.Get("label")
+		})
+
+		v.RegisterTranslation("required", Trans, func(ut ut.Translator) error {
+			return ut.Add("required", "请输入{0}", true)
+		}, func(ut ut.Translator, fe validator.FieldError) string {
+			t, err := ut.T(fe.Tag(), fe.Field())
+			if err != nil {
+				return fe.(error).Error()
+			}
+			return t
+		})
+	}
+	return func(c *gin.Context) {
+
+	}
+}
 
 type JsonError struct {
 	Response gin.H
@@ -52,6 +86,22 @@ func GET(r any, relativePath string, handler any) {
 func POST(r any, relativePath string, handler any) {
 	if n, ok := r.(*gin.Engine); ok {
 		n.POST(relativePath, func(c *gin.Context) {
+			execute(c, handler)
+		})
+	}
+}
+
+func PUT(r any, relativePath string, handler any) {
+	if n, ok := r.(*gin.Engine); ok {
+		n.PUT(relativePath, func(c *gin.Context) {
+			execute(c, handler)
+		})
+	}
+}
+
+func DELETE(r any, relativePath string, handler any) {
+	if n, ok := r.(*gin.Engine); ok {
+		n.DELETE(relativePath, func(c *gin.Context) {
 			execute(c, handler)
 		})
 	}
@@ -123,7 +173,20 @@ func handlerError(c *gin.Context, err error) {
 }
 
 func handlerValidator(c *gin.Context, req any, err error) {
-	c.JSON(http.StatusBadRequest, gin.H{"errors": "validator err"})
+	resp := gin.H{}
+	errs := gin.H{}
+	elem := reflect.TypeOf(req).Elem()
+	if ve, ok := err.(validator.ValidationErrors); ok {
+		for _, e := range ve {
+
+			if field, ok := elem.FieldByName(e.StructField()); ok {
+				jsonName, _ := field.Tag.Lookup("json")
+				errs[jsonName] = e.Translate(Trans)
+			}
+		}
+	}
+	resp["errors"] = errs
+	c.JSON(http.StatusBadRequest, resp)
 }
 
 func handlerResponse(c *gin.Context, response any, err error) {

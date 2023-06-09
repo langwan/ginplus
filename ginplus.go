@@ -228,3 +228,7 @@ func ResponseError(name string, err error) error {
 	marshal, _ := json.Marshal(resp)
 	return errors.New(string(marshal))
 }
+
+func HandleRecovery(c *gin.Context, err any) {
+	c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"errors": gin.H{".exception": err}})
+}

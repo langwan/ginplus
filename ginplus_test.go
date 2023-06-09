@@ -60,3 +60,16 @@ func Test_A(t *testing.T) {
 
 	r.Run(":4000")
 }
+
+func Test_Recovery(t *testing.T) {
+	r := gin.Default()
+	r.Use(UseRecovery())
+	POST(r, "/api/login", func(g *gin.Context) {
+		panic("err")
+	})
+	r.Run(":8810")
+}
+
+func UseRecovery() gin.HandlerFunc {
+	return gin.RecoveryWithWriter(gin.DefaultErrorWriter, HandleRecovery)
+}

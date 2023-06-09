@@ -232,3 +232,7 @@ func ResponseError(name string, err error) error {
 func HandleRecovery(c *gin.Context, err any) {
 	c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"errors": gin.H{".exception": err}})
 }
+
+func UseRecovery() gin.HandlerFunc {
+	return gin.RecoveryWithWriter(gin.DefaultErrorWriter, HandleRecovery)
+}

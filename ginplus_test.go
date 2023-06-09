@@ -69,7 +69,3 @@ func Test_Recovery(t *testing.T) {
 	})
 	r.Run(":8810")
 }
-
-func UseRecovery() gin.HandlerFunc {
-	return gin.RecoveryWithWriter(gin.DefaultErrorWriter, HandleRecovery)
-}

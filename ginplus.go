@@ -135,7 +135,7 @@ func execute(c *gin.Context, handler any) {
 		if err != nil {
 			handlerError(c, err)
 		} else {
-			c.JSON(http.StatusOK, gin.H{"body": "ok"})
+			c.JSON(http.StatusOK, "ok")
 		}
 
 	} else if n, ok := handler.(func(*gin.Context) (any, error)); ok {
@@ -183,19 +183,18 @@ func handlerError(c *gin.Context, err error) {
 	if err != nil {
 		var jsonError *JsonError
 		if errors.As(err, &jsonError) {
-			resp := gin.H{}
-			resp["errors"] = jsonError.Response
-			c.JSON(http.StatusBadRequest, resp)
+
+			c.JSON(http.StatusBadRequest, jsonError.Response)
 		} else {
 			c.JSON(http.StatusBadRequest, err)
 		}
 	} else {
-		c.JSON(http.StatusOK, gin.H{"body": "ok"})
+		c.JSON(http.StatusOK, "ok")
 	}
 }
 
 func handlerValidator(c *gin.Context, req any, err error) {
-	resp := gin.H{}
+
 	errs := gin.H{}
 	elem := reflect.TypeOf(req).Elem()
 	if ve, ok := err.(validator.ValidationErrors); ok {
@@ -207,30 +206,28 @@ func handlerValidator(c *gin.Context, req any, err error) {
 			}
 		}
 	}
-	resp["errors"] = errs
-	c.JSON(http.StatusBadRequest, resp)
+
+	c.JSON(http.StatusBadRequest, errs)
 }
 
 func handlerResponse(c *gin.Context, response any, err error) {
-	resp := gin.H{}
 	if err != nil {
 		handlerError(c, err)
 	} else {
-		resp["body"] = response
-		c.JSON(http.StatusOK, resp)
+		c.JSON(http.StatusOK, response)
 	}
 }
 
 func ResponseError(name string, err error) error {
-	resp := gin.H{}
+
 	h := gin.H{name: err.Error()}
-	resp["errors"] = h
-	marshal, _ := json.Marshal(resp)
+
+	marshal, _ := json.Marshal(h)
 	return errors.New(string(marshal))
 }
 
 func HandleRecovery(c *gin.Context, err any) {
-	c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"errors": gin.H{".exception": err}})
+	c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{".exception": err})
 }
 
 func UseRecovery() gin.HandlerFunc {
